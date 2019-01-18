@@ -54,35 +54,52 @@ def fatal(msg):
     logging.error(highlight.error(msg))
     sys.exit(-1)
 
+'''
+The options essentially determine the behaviour of the fuzzer. So this is a good place to start and see what the 
+fuzzer is doing. 
+TODO Document each option in detail. That is pretty much what the app can do from a high level. 
 
+'''
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Peach Runtime')
-    parser.add_argument('-pit', metavar='path', help='pit file')
+    parser.add_argument('-pit', metavar='path', help='pit file')  # TODO What is the difference between a pit and target
     parser.add_argument('-run', metavar='name', help='run name')
-    parser.add_argument('-analyzer', nargs="+", help='load analyzer.')
+    parser.add_argument('-analyzer', nargs="+", help='load analyzer.') # TODO - What is this
     parser.add_argument('-parser', help='use specific parser.')
-    parser.add_argument('-target', help='select a target pit.')
-    parser.add_argument('-macros', nargs='+', default=tuple(), help='override configuration macros')
-    parser.add_argument('-seed', metavar='#', default=time.time(), help='seed')
-    parser.add_argument('-debug', action='store_true', help='turn on debugging. (default: %(default)s)')
-    parser.add_argument('-new', action='store_true', help='use new relations.')
+    parser.add_argument('-target', help='select a target pit.') # TODO Why the different pit and target.
+    parser.add_argument('-macros', nargs='+', default=tuple(), help='override configuration macros') # TODO What is a Macro
+    parser.add_argument('-seed', metavar='#', default=time.time(), help='seed') # TODO Why the seed.
+    parser.add_argument('-debug', action='store_true', help='turn on debugging. (default: %(default)s)') # TODO What does store_true do here ?
+    parser.add_argument('-new', action='store_true', help='use new relations.')  # TODO What is new?
+    # Run just a single test case.
     parser.add_argument('-1', dest='single', action='store_true', help='run single test case.')
+    # TODO How do we run a range of test cases.
     parser.add_argument('-range', nargs=2, type=int, metavar='#', help='run range of test cases.')
+    # Validate the pit file. This might be a good place to start since this might give a sense of the pit file.
     parser.add_argument('-test', action='store_true', help='validate pit file.')
+    # TODO I guess this just counts the number of tests cases run. Is this behaviour not default?
     parser.add_argument('-count', action='store_true', help='count test cases for deterministic strategies.')
+    # TODO How do I specify this? What is test case number? Is it a uuid or what.
     parser.add_argument('-skipto', metavar='#', type=int, help='skip to a test case number.')
+    # TODO Does the code not run in parallel already?
     parser.add_argument('-parallel', nargs=2, metavar=('#', '#'), help='use parallelism.')
+    # TODO Why specify a way to start the agent? Aren't we already running the agent.
     parser.add_argument('-agent', nargs=2, metavar=('#', '#'), help='start agent.')
+    # TODO This seems obvious, but how is this done. How id the logging done.
     parser.add_argument('-logging', metavar='#', default=20, type=int, choices=range(10, 60, 10),
                         help='verbosity level of logging')
+    # TODO Check what ???
     parser.add_argument('-check', nargs=2, metavar=('model', 'samples'),
                         help='validate a data model against a set of samples.')
+    # TODO Verbosity for what - the logging. This might be for the console.
     parser.add_argument('-verbose', action='store_true',
                         help='turn verbosity on. (default: %(default)s)') # Use -vvv action=count
+    # Obvious, remove pyc files.
     parser.add_argument('-clean', action='store_true', help='remove python object files.')
+    # Obvious get the version of the fuzzer.
     parser.add_argument('-version', action='version', version='%(prog)s 1.0')
     args = parser.parse_args()
-
+    # Set up the logger. 
     logging.basicConfig(format='[Peach.%(name)s] %(message)s', level=args.logging)
 
     if args.pit and not args.pit.startswith('file:'):
