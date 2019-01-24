@@ -103,12 +103,12 @@ if __name__ == '__main__':
     logging.basicConfig(format='[Peach.%(name)s] %(message)s', level=args.logging)
 
     if args.pit and not args.pit.startswith('file:'):
-        args.pit = 'file:' + args.pit
+        args.pit = 'file:' + args.pit  # Check if the passed pit file is a file.
     if args.target and not args.target.startswith('file:'):
-        args.target = 'file:' + args.target
+        args.target = 'file:' + args.target  # Check that the passed target is a file as well.
 
-    args.configs = {}
-    for mac in args.macros:
+    args.configs = {}  # args configs contains macros, target pit, and other options.
+    for mac in args.macros:  # whats the difference between a macro and a program?
         k, v = mac.split('=', 1)
         args.configs[k.strip()] = v.strip()
     args.configs['_target'] = args.pit
@@ -117,14 +117,15 @@ if __name__ == '__main__':
     args.watcher = None
     args.restartFile = None
     peachrun = Engine()
-    peachrun.configs = args.configs
+    peachrun.configs = args.configs  # Transfer the configs to the Engine() just created.
     peachrun.SEED = args.seed
-    random.seed(peachrun.SEED)
+    random.seed(peachrun.SEED)  # Use the seed passed by the user to generate the test files.
 
     if args.debug:
-        Engine.debug = True
+        Engine.debug = True  # Set debug.
 
-    if args.clean:
+    if args.clean:      # Why do we need to delete these. I am guessing this is used if we make changes to the fuzzer
+        #  and do not wish to have the old pyc files run, but rather force the interpreter to recompile.
         if sys.platform == "darwin" or sys.platform == "linux2":
             subprocess.call(["find", ".", "-name", ".DS_Store", "-delete"])
             subprocess.call(["find", ".", "-name", "*.pyc", "-delete"])
@@ -134,17 +135,21 @@ if __name__ == '__main__':
 
     if args.analyzer:
         try:
-            cls = eval("%s()" % args.analyzer[0])
+            cls = eval("%s()" % args.analyzer[0])  # Initialize the analyzer specified and assign it to cls.
+            # by the user.
         except Exception as e:
             fatal("Loading analyzer failed: {}".format(e))
-        if hasattr(cls, "supportCommandLine"):
+        if hasattr(cls, "supportCommandLine"):  # Check if the analyzer can be run on the command line.
             logging.info("Using %s as analyzer class." % args.analyzer[0])
             a = {}
             for pair in args.analyzer[1:]:
                 key, val = pair.split("=")
                 a[key] = val
             try:
-                cls.asCommandLine(a)
+                cls.asCommandLine(a)    # Seems like this is being run in the command line now. But how? Note that is
+                #  using the dictionary to run the analyzer using the asCommandLine. This implies that each analyzer
+                # that has the ability to run via the command line must also have a function to run the same.
+
             except Exception as e:
                 fatal(e)
         else:
@@ -153,17 +158,24 @@ if __name__ == '__main__':
 
     if args.parser:
         try:
-            cls = eval(args.parser)
+            cls = eval(args.parser) # cls is reassigned this implies that the analyzer os run and let loose. We don't
+            # seem to keep a reference to it. This is similar to the Analyzer the way it is set up we also set this
+            # if provided perhaps by the user.
+            # The only difference here is that the Parser is not evaluated in the same way as the Analyzer, i.e it is
+            # missing. The reason I think is that we can here support python inbuilt or installed parsers. Note line
+            # 70 in parser.py. It uses the parser etree.XMLParser(remove_comments=True.
         except Exception as e:
             fatal("Loading parser class failed: {}".format(e))
         if hasattr(cls, "supportParser"):
             logging.info("Using {} as parser.".format(args.parser))
-            args.parser = cls()
+            args.parser = cls()     # If the parser is supported then use it. This is a bit confusing, since we set
+            # the parser using eval. EXPLAINED on line 161 above.
         else:
             fatal("Analyzer does not support parser usage.")
     else:
-        args.parser = PitXmlAnalyzer()
-    args.parser.configs = args.configs
+        args.parser = PitXmlAnalyzer()  # If the parser is set here does that mean that all this is to parse the pit
+        # file and not the target file format. That does seem like the most likely case.
+    args.parser.configs = args.configs  # Seems to be parsing all the config elemnets to the parser configs. 
 
     if args.new:
         Engine.relationsNew = True
