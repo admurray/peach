@@ -147,7 +147,7 @@ if __name__ == '__main__':
                 a[key] = val
             try:
                 cls.asCommandLine(a)    # Seems like this is being run in the command line now. But how? Note that is
-                #  using the dictionary to run the analyzer using the asCommandLine. This implies that each analyzer
+                #  passing a dictionary to run the analyzer using the asCommandLine. This implies that each analyzer
                 # that has the ability to run via the command line must also have a function to run the same.
 
             except Exception as e:
@@ -178,10 +178,12 @@ if __name__ == '__main__':
     args.parser.configs = args.configs  # Seems to be parsing all the config elemnets to the parser configs. 
 
     if args.new:
-        Engine.relationsNew = True
+        Engine.relationsNew = True  # If the new user arguement is passed, then set the Engine.relationNew to True
 
-    if args.check and args.pit:
-        from Peach.Engine.incoming import DataCracker
+    if args.check and args.pit: # Not sure what args. is.
+        from Peach.Engine.incoming import DataCracker  # What is DataCracker. Datacracker seems to be the module that is
+        # required to break the test file (.mp4 .pdf etc) into smaller blobs or fragments as per the pit or the target
+        # file.
         dataModelName = args.check[0]
         samplesPath = args.check[1]
         samples = []
